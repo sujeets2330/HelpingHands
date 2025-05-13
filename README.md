@@ -1,6 +1,6 @@
 # 🤝 HelpingHands: Volunteer & Donation Management Platform
 
-HelpingHands is a full-stack web platform for managing volunteer registrations, tracking donations, and facilitating interaction between donors, volunteers, and administrators. The platform is designed to simplify social initiatives, supporting causes with volunteer coordination and donation tracking. It uses a modern web stack with **Node.js**, **Express**, **MongoDB**, and **React** for the admin panel.
+HelpingHands is a full-stack web platform for managing volunteer registrations, tracking donations, and facilitating interaction between donors, volunteers, and administrators. The platform is designed to simplify social initiatives, supporting causes with volunteer coordination and donation tracking. It uses a modern web stack with **Node.js**, **JavaScript** , **Express**, **MongoDB**, and **React** for the admin panel.
 
 ---
 
