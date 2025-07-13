@@ -19,27 +19,28 @@
     <!-- Include Navbar -->
     <%- include('includes/navbar.ejs'); %>
 
-    <section class="home-sec" id="home">
-        <div class="background-layer" id="bg1"></div>
-        <div class="background-layer" id="bg2"></div>
-        <div class="container">
-            <div class="home-content">
-                <div class="row">
-                    <div class="col-lg-30 align-item-center">
-                        <div class="home-info">
-                            
-                            <h1>Alone we can do little, together we can do so much</h1>
-                            <h2>We <span>HelpingHands</span> donate for needy people.</h2>
-                            <p>Remember that the happiest people are not those getting more, but those giving more</p>
-                            <div class="buttons">
-                                <a href="#contact" class="btn1">Donate now</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <section class="home-sec d-flex align-items-center" id="home">
+  <div class="background-layer" id="bg1"></div>
+  <div class="background-layer" id="bg2"></div>
+
+  <div class="slider-controls">
+    <button class="arrow prev" aria-label="Previous Slide">&#10094;</button>
+    <button class="arrow next" aria-label="Next Slide">&#10095;</button>
+  </div>
+
+  <div class="container text-center">
+    <div class="home-content">
+      <h1>Alone we can do little,<br><span class="highlight">together we can do so much</span></h1>
+      <h2>We <span class="brand-name">HelpingHands</span> donate for needy people.</h2>
+      <p>Remember, the happiest people are not those getting more, but those giving more.</p>
+      <div class="buttons mt-4">
+        <a href="#contact" class="btn1">Donate Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
     
 
     <section class="don-sec" id="donation">
@@ -126,83 +127,101 @@
     </section>
 
     <section class="about-sec" id="about">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 about-img">
-                    <img src="img/img-2.jpeg" alt="about">
-                </div>
-                <div class="col-lg-8 order-first order-lg-last">
-                    <div class="heading">
-                        <h2>What We Do & Why We Do</h2>
-                    </div>
-                    <p>We connect generous hearts with meaningful causes, facilitating seamless donations to those in need. Our platform serves as a bridge, ensuring that your contributions reach the hands of those who can benefit most, empowering communities and sparking positive change.
-
-                    </p>
-                    <p> We believe in the power of compassion and collective action to transform lives. By leveraging technology, we aim to simplify the process of giving and amplify the impact of every act of kindness. Together, we can build a brighter, more equitable world, where generosity knows no bounds.
-                    </p>
-                    <div class="d-flex justify-content-center mt-5">
-                        <a href="/hello" class="btn btn-primary btn-lg mb-3">Track Donation</a>
-                    </div>
-                </div>
-            </div>
+  <div class="container">
+    <div class="row align-items-center">
+      
+      <!-- Left Image -->
+      <div class="col-lg-5 mb-4 mb-lg-0">
+        <div class="about-img-wrapper shadow">
+          <img src="/img/img-2.jpg" alt="HelpingHands About" class="img-fluid rounded">
         </div>
-    </section>
+      </div>
+
+      <!-- Right Text -->
+      <div class="col-lg-7">
+        <div class="about-content">
+          <h2 class="section-title text-primary mb-4">What We Do & Why We Do</h2>
+          <p>
+            We connect <strong>generous hearts</strong> with meaningful causes, facilitating seamless donations to those in need. 
+            Our platform serves as a bridge, ensuring that your contributions reach the right hands—empowering communities and sparking positive change.
+          </p>
+          <p>
+            At <span class="brand-text">HelpingHands</span>, we believe in the power of <strong>compassion</strong> and collective action to transform lives.
+            By leveraging technology, we simplify giving and amplify kindness. Together, let’s build a more equitable world.
+          </p>
+          <a href="/hello" class="btn btn-success btn-lg mt-4 shadow"  target="_blank">Track Donation</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
     <section class="contact-section" id="contact">
-        <div class="container">
-            <div class="heading text-center">
-                <h2>Connect With Us</h2>
-                <p>Fill this form, and our team will collect your <span>Donation</span> from your place.</p>
+  <div class="container">
+    <div class="heading text-center mb-5">
+      <h2 class="section-title">Connect With Us</h2>
+      <p class="section-subtitle">
+        Fill this form, and our team will collect your <span>Donation</span> from your place.
+      </p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
+        <form id="donationForm" class="contact-form shadow-lg p-4 rounded" action="/submit" method="POST">
+          <div class="row">
+            <!-- Left -->
+            <div class="col-lg-6">
+              <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" class="form-control" name="name" placeholder="Your Name" required />
+              </div>
+              <div class="form-group">
+                <label for="mobile">Mobile No.</label>
+                <input type="text" class="form-control" name="mobile" placeholder="Mobile No." required />
+              </div>
+              <div class="form-group">
+                <label for="donationType">Donation Type</label>
+                <select name="donationType" class="form-control" required>
+                  <option value="" disabled selected>Choose Donation Type</option>
+                  <option value="Food">Food</option>
+                  <option value="Clothes">Clothes</option>
+                  <option value="Footwear">Footwear</option>
+                  <option value="Books">Books</option>
+                  <option value="Fund">Fund</option>
+                  <option value="Gadget">Ele. Gadgets</option>
+                </select>
+              </div>
             </div>
-            
-            <div class="row justify-content-center">
-                <div class="col-lg-8"> <!-- Adjusted width for better alignment -->
-                    <form id="donationForm" class="contact-form shadow p-4 rounded" action="/submit" method="POST">
-                        <div class="row">
-                            <!-- Left Column -->
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <input type="text" class="form-control" name="name" placeholder="Your Name" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <input type="text" class="form-control" name="mobile" placeholder="Mobile No." required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <select name="donationType" class="form-control" required>
-                                        <option value="" disabled selected>Choose Donation Type</option>
-                                        <option value="Food">Food</option>
-                                        <option value="Clothes">Clothes</option>
-                                        <option value="Footwear">Footwear</option>
-                                        <option value="Books">Books</option>
-                                        <option value="Fund">Fund</option>
-                                        <option value="Gadget">Ele. Gadgets</option>
-                                    </select>
-                                </div>
-                            </div>
-    
-                            <!-- Right Column -->
-                            <div class="col-lg-6">
-                                <div class="form-group mb-3">
-                                    <input type="text" class="form-control" name="address" placeholder="Address" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <input type="email" class="form-control" name="email" placeholder="Your Email" required>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <textarea class="form-control" name="message"  placeholder="Your Message" required></textarea>
-                                </div>
-                            </div>
-    
-                            <!-- Submit Button -->
-                            <div class="col-md-12 text-center mt-4">
-                                <button type="submit" class="btn btn-primary px-4 py-2">Submit Details</button>
-                            </div>
-                        </div>
-                    </form>  
-                </div>
+
+            <!-- Right -->
+            <div class="col-lg-6">
+              <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" class="form-control" name="address" placeholder="Address" required />
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" name="email" placeholder="Your Email" required />
+              </div>
+              <div class="form-group">
+                <label for="message">Message</label>
+                <textarea class="form-control" name="message" placeholder="Your Message" required></textarea>
+              </div>
             </div>
-        </div>
-    </section>
+
+            <div class="col-md-12 text-center mt-3">
+              <button type="submit" class="btn btn-primary px-5 py-2 btn-lg shadow-sm">Submit Details</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+  
 
     <script src="/js/script1.js"></script>
 

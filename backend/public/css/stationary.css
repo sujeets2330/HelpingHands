@@ -1,0 +1,44 @@
+.donation-category-section {
+  background: #f8f9fa;
+  padding: 120px 0 60px;
+}
+
+.section-title {
+  font-weight: 700;
+  font-size: 2.1rem;
+  color: #2c3e50;
+}
+
+.simple-img {
+  height: 240px;
+  object-fit: cover;
+  width: 100%;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease;
+}
+
+.simple-img:hover {
+  transform: scale(1.02);
+}
+
+.gratitude-message h4 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.gratitude-message p {
+  font-size: 1rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .simple-img {
+    height: 200px;
+  }
+
+  .section-title {
+    font-size: 1.7rem;
+  }
+}

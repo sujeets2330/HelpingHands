@@ -1,83 +1,52 @@
-/* Main container */
+/* Simple Clothes Page */
+
 .donation-category-section {
-    padding: 60px 20px;
-    background-color: #f9f9f9;
-    font-family: 'Poppins', sans-serif;
-  }
-  
-  /* Heading */
-  .donation-category-section h2 {
-    text-align: center;
-    font-size: 32px;
-    color: #333;
-    margin-bottom: 40px;
-  }
-  
-  /* Grid layout */
-  .donation-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-  }
-  
-  /* Individual card */
-  .donation-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    width: 300px;
-    transition: transform 0.3s ease;
-  }
-  
-  .donation-card:hover {
-    transform: translateY(-5px);
-  }
-  
-  .donation-card img {
-    width: 100%;
+  background: #f8f9fa;
+  padding: 60px 0;
+}
+.donation-category-section {
+  background: #f8f9fa;
+  padding: 120px 0 60px; /* top padding increased to 120px */
+}
+
+
+.section-title {
+  font-weight: 700;
+  font-size: 2.1rem;
+  color: #2c3e50;
+}
+
+/* Simpler images */
+.simple-img {
+  height: 240px;
+  object-fit: cover;
+  width: 100%;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease;
+}
+
+.simple-img:hover {
+  transform: scale(1.02);
+}
+
+.gratitude-message h4 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.gratitude-message p {
+  font-size: 1rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .simple-img {
     height: 200px;
-    object-fit: cover;
   }
-  
-  .donation-card .card-body {
-    padding: 15px;
-    text-align: center;
+
+  .section-title {
+    font-size: 1.7rem;
   }
-  
-  .donation-card .card-body h4 {
-    font-size: 20px;
-    color: #222;
-    margin-bottom: 10px;
-  }
-  
-  .donation-card .card-body p {
-    font-size: 14px;
-    color: #555;
-  }
-  
-  /* Thank you message */
-  .thank-you-message {
-    text-align: center;
-    margin-top: 60px;
-    padding: 30px 20px;
-    background-color: #e0f7e9;
-    border-left: 6px solid #28a745;
-    border-radius: 8px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .thank-you-message h3 {
-    color: #28a745;
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
-  
-  .thank-you-message p {
-    color: #333;
-    font-size: 16px;
-    line-height: 1.5;
-  }
+}

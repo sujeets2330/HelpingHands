@@ -73,153 +73,188 @@
 const express = require("express");
 const router = express.Router();
 const Donor = require("../models/Donor");
-const transporter = require("../config/transporter");
-const { v4: uuidv4 } = require("uuid");
+const transporter = require("../config/transporter"); // Import transporter from config
 
-// Handle form submission
+//  Reusable Email Sender
+const sendEmail = async (to, subject, html, text) => {
+  try {
+    await transporter.sendMail({
+      from: `"HelpingHands" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html,
+      text,
+    });
+    console.log("Email sent to:", to);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
+
+//  Short Tracking Number Generator
+function generateTrackingNumber() {
+  const timestampPart = Date.now().toString().slice(-6);
+  return `HH-${timestampPart}`;
+}
+
+//  Submit Donation
 router.post("/submit", async (req, res) => {
-    try {
-        console.log("Received form data:", req.body);
-        const { name, mobile, donationType, address, email, message } = req.body;
+  try {
+    const { name, mobile, donationType, address, email, message } = req.body;
 
-        if (!name || !mobile || !donationType || !address || !email || !message) {
-            return res.status(400).json({ error: "All fields are required." });
-        }
-
-        const trackingNumber = uuidv4();
-
-        const donor = new Donor({
-            name,
-            mobile,
-            donationType,
-            address,
-            email,
-            message,
-            trackingNumber,
-            status: "Pending" 
-        });
-
-        await donor.save();
-        console.log("Donor saved:", donor);
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Donation Tracking Number",
-            text: `Hello ${name},\n\nThank you for your donation! Your tracking number is: ${trackingNumber}\n\nBest Regards,\nYour Organization`
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) console.error("Error sending email:", error);
-            else console.log("Email sent:", info.response);
-        });
-
-        const io = req.app.get("io");  
-        if (io) io.emit("newDonor", donor);
-
-        res.redirect('/thank');
-    } catch (error) {
-        console.error("Error processing donation:", error);
-        res.status(500).json({ error: "Server error. Please try again later." });
+    if (!name || !mobile || !donationType || !address || !email || !message) {
+      return res.status(400).json({ error: "All fields are required." });
     }
+
+    const trackingNumber = generateTrackingNumber();
+
+    const donor = new Donor({
+      name,
+      mobile,
+      donationType,
+      address,
+      email,
+      message,
+      trackingNumber,
+      status: "Pending",
+    });
+
+    await donor.save();
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; background-color: #f5f9ff; padding: 20px;">
+        <h2 style="color: #28a745;">Hi ${name},</h2>
+        <p>Thank you for your generous donation to <strong>HelpingHands</strong>!</p>
+        <p>Your tracking number is:</p>
+        <div style="padding: 12px 24px; background-color: #e0f7e9; font-size: 18px; font-weight: bold; border-radius: 5px;">
+          ${trackingNumber}
+        </div>
+        <p style="margin-top: 20px;">You can track your donation <a href="https://www.helpinghands.org/track/${trackingNumber}" target="_blank">here</a>.</p>
+        <p>With gratitude,<br><strong>The HelpingHands Team</strong></p>
+      </div>
+    `;
+
+    const text = `
+Hi ${name},
+
+Thank you for your donation to HelpingHands!
+
+Tracking number: ${trackingNumber}
+Track your donation: https://www.helpinghands.org/track/${trackingNumber}
+
+— HelpingHands Team
+`;
+
+    await sendEmail(email, "🎉 Thank You for Your Donation", html, text);
+
+    const io = req.app.get("io");
+    if (io) io.emit("newDonor", donor);
+
+    res.redirect("/thank");
+  } catch (error) {
+    console.error("Error processing donation:", error);
+    res.status(500).json({ error: "Server error. Please try again later." });
+  }
 });
 
-// Fetch all donors
+//  Get All Donors
 router.get("/donors", async (req, res) => {
-    try {
-        const donors = await Donor.find().sort({ createdAt: -1 });
-        res.json(donors);
-    } catch (error) {
-        console.error("Error fetching donors:", error);
-        res.status(500).json({ error: "Server error. Please try again later." });
-    }
+  try {
+    const donors = await Donor.find().sort({ createdAt: -1 });
+    res.json(donors);
+  } catch (error) {
+    console.error("Error fetching donors:", error);
+    res.status(500).json({ error: "Server error." });
+  }
 });
 
-// Fetch tracking details by tracking number
+//  Track Donation by Number
 router.get("/track/:trackingNumber", async (req, res) => {
-    try {
-        const { trackingNumber } = req.params;
-        console.log("Received Tracking Number:", trackingNumber);
+  try {
+    const { trackingNumber } = req.params;
+    const donor = await Donor.findOne({ trackingNumber });
 
-        const donor = await Donor.findOne({ trackingNumber });
-
-        if (!donor) {
-            console.log("No donor found for tracking number:", trackingNumber);
-            return res.status(404).json({ error: "Tracking number not found." });
-        }
-
-        console.log("Donor found:", donor);
-
-        res.json({
-            name: donor.name,
-            donationType: donor.donationType,
-            status: donor.status || "Pending",
-            updatedAt: donor.updatedAt || "Not Available"
-        });
-    } catch (error) {
-        console.error("Error fetching tracking details:", error);
-        res.status(500).json({ error: "Server error. Please try again later." });
+    if (!donor) {
+      return res.status(404).json({ error: "Tracking number not found." });
     }
+
+    res.json({
+      name: donor.name,
+      donationType: donor.donationType,
+      status: donor.status || "Pending",
+      updatedAt: donor.updatedAt || "Not Available",
+    });
+  } catch (error) {
+    console.error("Error tracking donation:", error);
+    res.status(500).json({ error: "Server error." });
+  }
 });
 
-// Update donation status
+//  Update Donation Status
 router.put("/donors/:id/status", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-        if (!status) return res.status(400).json({ error: "Status is required." });
-
-        const donor = await Donor.findByIdAndUpdate(id, { status }, { new: true });
-
-        if (!donor) {
-            return res.status(404).json({ error: "Donor not found." });
-        }
-
-        console.log("Status updated:", donor);
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: donor.email,
-            subject: "Donation Status Updated",
-            text: `Hello ${donor.name},\n\nYour donation status has been updated to: ${status}.\n\nBest Regards,\nYour Organization`
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) console.error("Error sending email:", error);
-            else console.log("Email sent:", info.response);
-        });
-
-        const io = req.app.get("io"); 
-        if (io) io.emit("updateDonor", donor);
-
-        res.json({ message: "Donation status updated successfully.", donor });
-    } catch (error) {
-        console.error("Error updating status:", error);
-        res.status(500).json({ error: "Server error. Please try again later." });
+    if (!status) {
+      return res.status(400).json({ error: "Status is required." });
     }
+
+    const donor = await Donor.findByIdAndUpdate(id, { status }, { new: true });
+    if (!donor) {
+      return res.status(404).json({ error: "Donor not found." });
+    }
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #fffef5;">
+        <h2 style="color: #007bff;">Hi ${donor.name},</h2>
+        <p>Your donation status has been updated to:</p>
+        <div style="padding: 10px 20px; background-color: #f0f8ff; border-left: 5px solid #007bff; font-weight: bold;">
+          ${status}
+        </div>
+        <p>Thank you for your support.<br><strong>— HelpingHands Team</strong></p>
+      </div>
+    `;
+
+    const text = `
+Hi ${donor.name},
+
+Your donation status has been updated to: ${status}
+
+Thank you for your continued support!
+
+— HelpingHands Team
+`;
+
+    await sendEmail(donor.email, " Your Donation Status Update", html, text);
+
+    const io = req.app.get("io");
+    if (io) io.emit("updateDonor", donor);
+
+    res.json({ message: "Donation status updated successfully.", donor });
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).json({ error: "Server error." });
+  }
 });
 
-// Delete a donor by ID
+//  Delete Donation
 router.delete("/donors/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        const donor = await Donor.findByIdAndDelete(id);
-        if (!donor) return res.status(404).json({ error: "Donor not found." });
+    const donor = await Donor.findByIdAndDelete(id);
+    if (!donor) return res.status(404).json({ error: "Donor not found." });
 
-        console.log("Donor deleted:", donor);
+    const io = req.app.get("io");
+    if (io) io.emit("deleteDonor", id);
 
-        // Notify all clients about the deletion
-        req.app.get("io").emit("deleteDonor", id);
-
-        res.json({ message: "Donation record deleted successfully." });
-    } catch (error) {
-        console.error("Error deleting donor:", error);
-        res.status(500).json({ error: "Server error. Please try again later." });
-    }
+    res.json({ message: "Donation record deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting donor:", error);
+    res.status(500).json({ error: "Server error." });
+  }
 });
-
 
 module.exports = router;
 

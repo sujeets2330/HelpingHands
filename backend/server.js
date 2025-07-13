@@ -11,6 +11,7 @@ const connectDB = require("./config/db");
 const donorRoutes = require("./routes/donorRoutes");
 const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middleware/errorHandler");
+ 
 
 // Initialize App
 const app = express();
@@ -49,6 +50,7 @@ app.get("/donate/food", (req, res) => res.render("donate/food"));
 // API Routes
 app.use(authRoutes);
 app.use(donorRoutes);
+ 
 
 // Error Handler
 app.use(errorHandler);
