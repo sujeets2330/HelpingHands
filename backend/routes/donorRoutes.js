@@ -324,7 +324,7 @@ You can track your donation anytime.
 
 // ==========================
 // GET ALL DONORS
-// ==========================
+// ==========================-
 router.get("/donors", async (req, res) => {
   try {
     const donors = await Donor.find().sort({ createdAt: -1 });
