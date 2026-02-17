@@ -77,7 +77,6 @@
 // server.listen(PORT, () => {
 //   console.log(`Server running on http://localhost:${PORT}`);
 // });
-
 require("dotenv").config();
 
 const express = require("express");
@@ -96,41 +95,76 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 9090;
 
-// DB
+// ======================
+// Database
+// ======================
 connectDB();
 
+// ======================
 // Middleware
+// ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: true, // SAME origin (frontend + backend)
+    origin: true,
     credentials: true,
   })
 );
 
-// View engine (optional, you can keep)
+// ======================
+// View Engine (EJS)
+// ======================
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// API routes
+// Static files for EJS (CSS, images, JS)
+app.use(express.static(path.join(__dirname, "public")));
+
+// ======================
+// ROOT + EJS ROUTES
+// ======================
+app.get("/", (req, res) => {
+  res.render("index"); //  backend/views/index.ejs
+});
+
+app.get("/thank", (req, res) => res.render("thank"));
+app.get("/track", (req, res) => res.render("track"));
+app.get("/hello", (req, res) => res.render("hello"));
+
+app.get("/donate/clothes", (req, res) => res.render("donate/clothes"));
+app.get("/donate/footwear", (req, res) => res.render("donate/footwear"));
+app.get("/donate/fund", (req, res) => res.render("donate/fund"));
+app.get("/donate/gadgets", (req, res) => res.render("donate/gadgets"));
+app.get("/donate/stationery", (req, res) => res.render("donate/stationary"));
+app.get("/donate/food", (req, res) => res.render("donate/food"));
+
+// ======================
+// API ROUTES
+// ======================
 app.use(authRoutes);
 app.use(donorRoutes);
 
-// Errors
+// ======================
+// Error Handler
+// ======================
 app.use(errorHandler);
 
-// =====================
-// SOCKET.IO
-// =====================
+// ======================
+// SOCKET.IO (Render supports this)
+// ======================
 const io = new Server(server, {
-  cors: { origin: true, credentials: true },
+  cors: {
+    origin: true,
+    credentials: true,
+  },
 });
 
 io.on("connection", (socket) => {
   console.log(" Socket connected:", socket.id);
+
   socket.on("disconnect", () => {
     console.log(" Socket disconnected:", socket.id);
   });
@@ -138,17 +172,9 @@ io.on("connection", (socket) => {
 
 app.set("io", io);
 
-// =====================
-// SERVE FRONTEND BUILD
-// =====================
-const frontendPath = path.join(__dirname, "../frontend/dist");
-app.use(express.static(frontendPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
-
-// Start
+// ======================
+// START SERVER
+// ======================
 server.listen(PORT, () => {
   console.log(` Server running on port ${PORT}`);
 });
