@@ -4,19 +4,19 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   host: "smtp.gmail.com",
   port: 465,
-  secure: true, // ✅ SSL
+  secure: true, 
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail APP PASSWORD
+    pass: process.env.EMAIL_PASS, 
   },
 });
 
 // Verify connection
 transporter.verify((error) => {
   if (error) {
-    console.error("❌ Email transporter error:", error);
+    console.error(" Email transporter error:", error);
   } else {
-    console.log("✅ Email transporter ready (SSL 465)");
+    console.log(" Email transporter ready (SSL 465)");
   }
 });
 
@@ -29,9 +29,9 @@ const sendEmail = async ({ to, subject, text }) => {
       text,
     });
 
-    console.log("📧 Email sent:", info.messageId);
+    console.log(" Email sent:", info.messageId);
   } catch (error) {
-    console.error("❌ Error sending email:", error);
+    console.error(" Error sending email:", error);
   }
 };
 
