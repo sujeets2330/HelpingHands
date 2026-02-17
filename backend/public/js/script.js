@@ -1,38 +1,59 @@
- 
 // Function to handle form submission
 async function handleFormSubmission(event) {
-  event.preventDefault(); // Prevent the default form submission behavior
+  event.preventDefault();
 
-  // Get form data
-  const formData = new FormData(event.target);
-  
-  // Convert form data to a URL-encoded string
+  const form = event.target;
+  const submitBtn = form.querySelector("button[type='submit']");
+
+  // 🔒 Prevent double submission
+  submitBtn.disabled = true;
+  const originalText = submitBtn.innerText;
+  submitBtn.innerText = "Submitting...";
+
+  // Collect form data
+  const formData = new FormData(form);
   const formDataString = new URLSearchParams(formData).toString();
 
   try {
-    // Send the form data to the server using fetch
-    const response = await fetch('/submit', {
-      method: 'POST',
+    // ⏱ Add timeout protection
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s max
+
+    const response = await fetch("/submit", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: formDataString
+      body: formDataString,
+      signal: controller.signal,
     });
 
-    // Check if the response is successful
-    if (response.ok) {
-      const responseData = await response.text();
-      console.log('Server response:', responseData);
-      alert('Thank you for your submission!');
-    } else {
-      console.error('Server error:', response.statusText);
-      alert('There was an error processing your submission. Please try again later.');
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error("Server error");
     }
+
+    // ✅ SUCCESS UX (IMMEDIATE)
+    alert("Thank you! Your donation request has been submitted.");
+
+    // Optional: redirect instead of alert (better UX)
+    window.location.href = "/thank";
+
   } catch (error) {
-    console.error('Fetch error:', error);
-    alert('There was an error processing your submission. Please try again later.');
+    console.error("Submission error:", error);
+    alert("Submission failed. Please try again.");
+  } finally {
+    // Restore button (if user comes back)
+    submitBtn.disabled = false;
+    submitBtn.innerText = originalText;
   }
 }
 
-// Add event listener to the form for submission handling
-document.getElementById('donationForm').addEventListener('submit', handleFormSubmission);
+// Attach listener safely
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("donationForm");
+  if (form) {
+    form.addEventListener("submit", handleFormSubmission);
+  }
+});
