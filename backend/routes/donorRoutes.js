@@ -257,11 +257,12 @@
 // });
 
 // module.exports = router;
+ 
 
 const express = require("express");
 const router = express.Router();
 const Donor = require("../models/Donor");
-const sendEmail = require("../config/emailService"); // ✅ ONLY this
+const sendEmail = require("../config/emailService"); // ✅ SendGrid service
 
 // ==========================
 // Tracking Number Generator
@@ -295,7 +296,7 @@ router.post("/submit", async (req, res) => {
       status: "Pending",
     });
 
-    // 📧 Donor confirmation email
+    // 📧 Send confirmation email to donor
     await sendEmail({
       to: email,
       subject: "Thank You for Your Donation",
@@ -310,7 +311,7 @@ You can track your donation anytime.
 — HelpingHands Team`,
     });
 
-    // 🔴 Socket update
+    // 🔴 Emit socket event
     const io = req.app.get("io");
     if (io) io.emit("newDonor", donor);
 
@@ -393,7 +394,7 @@ Thank you for your support.
 — HelpingHands Team`,
     });
 
-    // 🔴 Socket update
+    // 🔴 Emit socket update
     const io = req.app.get("io");
     if (io) io.emit("updateDonor", donor);
 
@@ -410,7 +411,9 @@ Thank you for your support.
 router.delete("/donors/:id", async (req, res) => {
   try {
     const donor = await Donor.findByIdAndDelete(req.params.id);
-    if (!donor) return res.status(404).json({ error: "Donor not found." });
+    if (!donor) {
+      return res.status(404).json({ error: "Donor not found." });
+    }
 
     const io = req.app.get("io");
     if (io) io.emit("deleteDonor", req.params.id);
@@ -423,4 +426,3 @@ router.delete("/donors/:id", async (req, res) => {
 });
 
 module.exports = router;
-

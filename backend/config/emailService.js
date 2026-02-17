@@ -1,37 +1,51 @@
-const nodemailer = require("nodemailer");
+// const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, 
-  },
-});
+// // Configure email transporter
+// const transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   host: smtp.gmail.com,
+//   port : 465,
+//   secure: true,  
+//   auth: {
+//     user: process.env.EMAIL_USER,  
+//     pass: process.env.EMAIL_PASS, 
+//   },
+// });
 
-// Verify connection
-transporter.verify((error) => {
-  if (error) {
-    console.error(" Email transporter error:", error);
-  } else {
-    console.log(" Email transporter ready (SSL 465)");
-  }
-});
+// // Function to send email
+// const sendEmail = async (to, subject, text) => {
+//   try {
+//     await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to,
+//       subject,
+//       text,
+//     });
+//     console.log("Email sent successfully");
+//   } catch (error) {
+//     console.error("Error sending email:", error);
+//   }
+// };
+
+// module.exports = sendEmail;
+
+const sgMail = require("@sendgrid/mail");
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendEmail = async ({ to, subject, text }) => {
   try {
-    const info = await transporter.sendMail({
-      from: `"HelpingHands" <${process.env.EMAIL_USER}>`,
+    await sgMail.send({
+      from: process.env.EMAIL_USER,
       to,
+      // from: "helpinghands@example.com", 
       subject,
       text,
     });
 
-    console.log(" Email sent:", info.messageId);
+    console.log(" Email sent via SendGrid");
   } catch (error) {
-    console.error(" Error sending email:", error);
+    console.error(" SendGrid error:", error.response?.body || error);
   }
 };
 
