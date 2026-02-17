@@ -41,11 +41,11 @@
               const data = await response.json();
               const formattedDate = new Date(data.updatedAt).toLocaleString();
         
-              // ✅ If donation is marked as completed (archived/deleted)
+              //  If donation is marked as completed (archived/deleted)
               if (data.completed) {
                 trackingInfo.innerHTML = `
                   <div style="background:#e6f4ea;padding:20px;border-radius:10px;color:#2e7d32;">
-                    <h2>🎉 Thank You!</h2>
+                    <h2> Thank You!</h2>
                     <p>Your donation of <strong>${data.donationType}</strong> has already been successfully delivered.</p>
                     <p>We appreciate your generosity and contribution to our cause. 💚</p>
                     <p><strong>Status:</strong> Completed</p>
@@ -54,11 +54,11 @@
                 return;
               }
         
-              // ✅ If status is "completed"
+              //  If status is "completed"
               if (data.status.toLowerCase() === "completed") {
                 trackingInfo.innerHTML = `
                   <div style="background:#e6f4ea;padding:20px;border-radius:10px;color:#2e7d32;">
-                    <h2>🎉 Thank You, ${data.name}!</h2>
+                    <h2> Thank You, ${data.name}!</h2>
                     <p>Your donation of <strong>${data.donationType}</strong> was successfully delivered on <strong>${formattedDate}</strong>.</p>
                     <p>Your kindness is making a real difference in someone's life. 💚</p>
                     <p><strong>Status:</strong> Completed</p>
@@ -67,11 +67,11 @@
                 return;
               }
         
-              // ✅ If status is "accepted"
+              //  If status is "accepted"
               if (data.status.toLowerCase() === "accepted") {
                 trackingInfo.innerHTML = `
                   <div style="background:#fff8e1;padding:20px;border-radius:10px;color:#6d4c41;">
-                    <h2>🌟 Thank You, ${data.name}!</h2>
+                    <h2> Thank You, ${data.name}!</h2>
                     <p>Your generous donation of <strong>${data.donationType}</strong> has been accepted by our team.</p>
                     <p>We appreciate your support and kindness.</p>
                     <p><strong>Status:</strong> Accepted</p>
@@ -81,7 +81,7 @@
                 return;
               }
         
-              // ✅ Add more status messages as needed (e.g., pending, on the way, etc.)
+              //  Add more status messages as needed (e.g., pending, on the way, etc.)
               // For now, a default elegant layout:
               trackingInfo.innerHTML = `
                 <div style="background:#f0f4f8;padding:20px;border-radius:10px;color:#333;">
