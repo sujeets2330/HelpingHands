@@ -83,76 +83,72 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 const ejsMate = require("ejs-mate");
 
-// Import Local Modules
 const connectDB = require("./config/db");
 const donorRoutes = require("./routes/donorRoutes");
 const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
-// Initialize App
 const app = express();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 9090;
 
-// Connect to MongoDB
+// DB
 connectDB();
 
-// ======================
 // Middleware
-// ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://helpinghands.vercel.app" // frontend URL
-    ],
+    origin: true, // SAME origin (frontend + backend)
     credentials: true,
   })
 );
 
-// ======================
-// View Engine (EJS)
-// ======================
+// View engine (optional, you can keep)
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// ======================
-// Static Files
-// ======================
-app.use(express.static(path.join(__dirname, "public")));
-
-// ======================
-// Frontend Pages (EJS)
-// ======================
-app.get("/", (req, res) => res.render("index"));
-app.get("/thank", (req, res) => res.render("thank"));
-app.get("/track", (req, res) => res.render("track"));
-app.get("/hello", (req, res) => res.render("hello"));
-
-// Donation Category Pages
-app.get("/donate/clothes", (req, res) => res.render("donate/clothes"));
-app.get("/donate/footwear", (req, res) => res.render("donate/footwear"));
-app.get("/donate/fund", (req, res) => res.render("donate/fund"));
-app.get("/donate/gadgets", (req, res) => res.render("donate/gadgets"));
-app.get("/donate/stationery", (req, res) => res.render("donate/stationary"));
-app.get("/donate/food", (req, res) => res.render("donate/food"));
-
-// ======================
-// API Routes
-// ======================
+// API routes
 app.use(authRoutes);
 app.use(donorRoutes);
 
-// ======================
-// Error Handler
-// ======================
+// Errors
 app.use(errorHandler);
 
-// ======================
-// EXPORT APP (VERY IMPORTANT FOR VERCEL)
-// ======================
-module.exports = app;
+// =====================
+// SOCKET.IO
+// =====================
+const io = new Server(server, {
+  cors: { origin: true, credentials: true },
+});
+
+io.on("connection", (socket) => {
+  console.log(" Socket connected:", socket.id);
+  socket.on("disconnect", () => {
+    console.log(" Socket disconnected:", socket.id);
+  });
+});
+
+app.set("io", io);
+
+// =====================
+// SERVE FRONTEND BUILD
+// =====================
+const frontendPath = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendPath));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
+
+// Start
+server.listen(PORT, () => {
+  console.log(` Server running on port ${PORT}`);
+});
