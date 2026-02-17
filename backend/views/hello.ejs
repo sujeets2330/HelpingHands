@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track My Donation</title>
+    <link rel="stylesheet" href="/css/style.css"> 
+</head>
+<body>
+    <div class="container">
+        <h1>Track Your Donation</h1>
+        <p>Enter your tracking number to check the current status of your donated item.</p>
+        <input type="text" id="trackingNumber" placeholder="Enter Tracking Number">
+        <button id="trackButton">Track</button>
+        <div id="trackingInfo"></div>
+    </div>
+
+   
+        
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const trackButton = document.getElementById('trackButton');
+          const trackingInfo = document.getElementById('trackingInfo');
+        
+          trackButton.addEventListener('click', async () => {
+            const trackingNumber = document.getElementById('trackingNumber').value.trim();
+            trackingInfo.innerHTML = "";
+        
+            if (!trackingNumber) {
+              trackingInfo.innerHTML = `<p style="color: red;">Please enter a valid tracking number.</p>`;
+              return;
+            }
+        
+            try {
+              const response = await fetch(`/track/${trackingNumber}`);
+        
+              if (!response.ok && response.status !== 200) {
+                throw new Error(`Server Error: ${response.status}`);
+              }
+        
+              const data = await response.json();
+              const formattedDate = new Date(data.updatedAt).toLocaleString();
+        
+              // ✅ If donation is marked as completed (archived/deleted)
+              if (data.completed) {
+                trackingInfo.innerHTML = `
+                  <div style="background:#e6f4ea;padding:20px;border-radius:10px;color:#2e7d32;">
+                    <h2>🎉 Thank You!</h2>
+                    <p>Your donation of <strong>${data.donationType}</strong> has already been successfully delivered.</p>
+                    <p>We appreciate your generosity and contribution to our cause. 💚</p>
+                    <p><strong>Status:</strong> Completed</p>
+                  </div>
+                `;
+                return;
+              }
+        
+              // ✅ If status is "completed"
+              if (data.status.toLowerCase() === "completed") {
+                trackingInfo.innerHTML = `
+                  <div style="background:#e6f4ea;padding:20px;border-radius:10px;color:#2e7d32;">
+                    <h2>🎉 Thank You, ${data.name}!</h2>
+                    <p>Your donation of <strong>${data.donationType}</strong> was successfully delivered on <strong>${formattedDate}</strong>.</p>
+                    <p>Your kindness is making a real difference in someone's life. 💚</p>
+                    <p><strong>Status:</strong> Completed</p>
+                  </div>
+                `;
+                return;
+              }
+        
+              // ✅ If status is "accepted"
+              if (data.status.toLowerCase() === "accepted") {
+                trackingInfo.innerHTML = `
+                  <div style="background:#fff8e1;padding:20px;border-radius:10px;color:#6d4c41;">
+                    <h2>🌟 Thank You, ${data.name}!</h2>
+                    <p>Your generous donation of <strong>${data.donationType}</strong> has been accepted by our team.</p>
+                    <p>We appreciate your support and kindness.</p>
+                    <p><strong>Status:</strong> Accepted</p>
+                    <p><strong>Last Updated:</strong> ${formattedDate}</p>
+                  </div>
+                `;
+                return;
+              }
+        
+              // ✅ Add more status messages as needed (e.g., pending, on the way, etc.)
+              // For now, a default elegant layout:
+              trackingInfo.innerHTML = `
+                <div style="background:#f0f4f8;padding:20px;border-radius:10px;color:#333;">
+                  <h2>Status: ${data.status}</h2>
+                  <p><strong>Donated Item:</strong> ${data.donationType}</p>
+                  <p><strong>Donor:</strong> ${data.name}</p>
+                  <p><strong>Last Updated:</strong> ${formattedDate}</p>
+                </div>
+              `;
+        
+            } catch (error) {
+              trackingInfo.innerHTML = `<p style="color: red;">Error fetching tracking details: ${error.message}</p>`;
+            }
+          });
+        });
+        </script>
+        
+   
+ 
+
+ 
+
+  
+
+   
+ 
+
+
+    <style>
+        .container {
+            width: 500px;
+            margin: 50px auto;
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        input[type="text"] {
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            width: calc(100% - 30px);
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #trackingInfo {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+
+        .timeline {
+            list-style-type: none;
+            padding: 0;
+            position: relative;
+            max-width: 300px;
+            margin: 20px auto;
+            text-align: left;
+        }
+
+        .timeline:before {
+            content: '';
+            background: #d4d9df;
+            display: inline-block;
+            position: absolute;
+            left: 20px;
+            width: 2px;
+            height: 100%;
+            z-index: 400;
+        }
+
+        .timeline li {
+            margin: 20px 0;
+            padding-left: 50px;
+            position: relative;
+        }
+
+        .timeline li:before {
+            content: '';
+            background: #fff;
+            display: inline-block;
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid #4CAF50;
+            left: 11px;
+            width: 20px;
+            height: 20px;
+            z-index: 400;
+        }
+
+        .timeline li.complete:before {
+            background: #4CAF50;
+        }
+
+        .timeline li.complete h3,
+        .timeline li.complete p {
+            color: #4CAF50;
+        }
+
+        .timeline h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .timeline p {
+            margin: 5px 0 0;
+            color: #666;
+        }
+
+        .expected-delivery {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+  
+</body>
+</html>
