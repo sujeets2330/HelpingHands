@@ -1,16 +1,16 @@
-// -import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import TrackDonation from "./pages/TrackDonation";
 import AuthProvider, { useAuth } from "./context/AuthContext";
 import { DonationProvider } from "./context/DonationContext";
+ 
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ element }) => {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+  return user ? element : <Navigate to="/login" />;
 };
 
 function App() {
@@ -18,29 +18,16 @@ function App() {
     <AuthProvider>
       <DonationProvider>
         <Router>
-          <Routes>
-            {/* ROOT */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-
-            {/* PUBLIC ROUTES */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            {/* PROTECTED ROUTES */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route path="/track" element={<TrackDonation />} />
-
-            {/* FALLBACK */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
+          <>
+            {/* Your main app routes */}
+            <Routes>
+              <Route path="/" element={<Navigate to="/login" />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+              <Route path="/track" element={<TrackDonation />} />
+            </Routes>
+          </>
         </Router>
       </DonationProvider>
     </AuthProvider>
