@@ -381,7 +381,7 @@ router.put("/donors/:id/status", async (req, res) => {
       return res.status(404).json({ error: "Donor not found." });
     }
 
-    // 📧 Status update email
+    //  Status update email
     await sendEmail({
       to: donor.email,
       subject: "Donation Status Updated",
