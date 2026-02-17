@@ -16,8 +16,12 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   esbuild: {
-    loader: "jsx", 
-    include: /src\/.*\.jsx?$/, 
-    jsxInject: `import React from 'react'`, 
+    loader: "jsx",
+    include: /src\/.*\.jsx?$/,
+    jsxInject: `import React from 'react'`,
+  },
+  preview: {
+    allowedHosts: "all",
   },
 });
+
