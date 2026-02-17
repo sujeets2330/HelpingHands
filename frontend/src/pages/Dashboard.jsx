@@ -195,32 +195,32 @@
 // export default Dashboard;
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import io from "socket.io-client";
 import "./Auth.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const socket = io(API_URL, {
-  transports: ["websocket"],
-});
 
 const Dashboard = () => {
   const [donations, setDonations] = useState([]);
   const [filteredDonations, setFilteredDonations] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All");
-  const [subscribers, setSubscribers] = useState([]);
   const navigate = useNavigate();
 
-  // Auth check
+  // ======================
+  // AUTH CHECK
+  // ======================
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/login");
   }, [navigate]);
 
-  // Fetch all donations
+  // ======================
+  // FETCH DONATIONS
+  // ======================
   const fetchDonations = async () => {
     try {
       const res = await fetch(`${API_URL}/donors`);
       if (!res.ok) throw new Error("Failed to fetch donations");
+
       const data = await res.json();
       const sorted = data.sort(
         (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
@@ -231,18 +231,13 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch newsletter subscribers
-  const fetchSubscribers = async () => {
-    try {
-      const res = await fetch(`${API_URL}/subscribers`);
-      const data = await res.json();
-      setSubscribers(data);
-    } catch (err) {
-      console.error("Error fetching subscribers:", err);
-    }
-  };
+  useEffect(() => {
+    fetchDonations();
+  }, []);
 
-  // Filter donations by status
+  // ======================
+  // FILTER
+  // ======================
   useEffect(() => {
     if (statusFilter === "All") {
       setFilteredDonations(donations);
@@ -253,68 +248,50 @@ const Dashboard = () => {
     }
   }, [donations, statusFilter]);
 
-  // Load data and setup socket listeners
-  useEffect(() => {
-    fetchDonations();
-    fetchSubscribers();
-
-    socket.on("newDonor", (newDonor) => {
-      setDonations((prev) =>
-        [newDonor, ...prev].sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
-      );
-    });
-
-    socket.on("updateDonor", (updatedDonor) => {
-      setDonations((prev) =>
-        prev
-          .map((d) => (d._id === updatedDonor._id ? updatedDonor : d))
-          .sort(
-            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-          )
-      );
-    });
-
-    socket.on("deleteDonor", (deletedId) => {
-      setDonations((prev) => prev.filter((d) => d._id !== deletedId));
-    });
-
-    return () => {
-      socket.off("newDonor");
-      socket.off("updateDonor");
-      socket.off("deleteDonor");
-    };
-  }, []);
-
-  const handleFilterChange = (e) => {
-    setStatusFilter(e.target.value);
-  };
-
+  // ======================
+  // UPDATE STATUS (INSTANT)
+  // ======================
   const handleUpdateStatus = async (id, currentStatus) => {
     const nextStatus =
-      currentStatus === "Pending"
-        ? "Accepted"
-        : "Completed";
+      currentStatus === "Pending" ? "Accepted" : "Completed";
 
     try {
-      await fetch(`${API_URL}/donors/${id}/status`, {
+      const res = await fetch(`${API_URL}/donors/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus }),
       });
+
+      if (!res.ok) throw new Error("Update failed");
+
+      const updatedDonor = await res.json();
+
+      // 🔥 INSTANT UI UPDATE
+      setDonations((prev) =>
+        prev.map((d) =>
+          d._id === updatedDonor._id ? updatedDonor : d
+        )
+      );
     } catch (err) {
       console.error("Error updating status:", err);
     }
   };
 
+  // ======================
+  // DELETE (INSTANT)
+  // ======================
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
 
     try {
-      await fetch(`${API_URL}/donors/${id}`, {
+      const res = await fetch(`${API_URL}/donors/${id}`, {
         method: "DELETE",
       });
+
+      if (!res.ok) throw new Error("Delete failed");
+
+      // 🔥 INSTANT UI UPDATE
+      setDonations((prev) => prev.filter((d) => d._id !== id));
     } catch (err) {
       console.error("Error deleting record:", err);
     }
@@ -332,6 +309,9 @@ const Dashboard = () => {
     });
   };
 
+  // ======================
+  // UI
+  // ======================
   return (
     <div className="dashboard-container">
       <h2>Admin Dashboard</h2>
@@ -341,7 +321,7 @@ const Dashboard = () => {
         <select
           className="status-filter"
           value={statusFilter}
-          onChange={handleFilterChange}
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="All">All</option>
           <option value="Pending">Pending</option>
@@ -367,6 +347,7 @@ const Dashboard = () => {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {filteredDonations.map((donor) => (
               <tr key={donor._id}>
@@ -374,6 +355,7 @@ const Dashboard = () => {
                 <td>{donor.mobile}</td>
                 <td>{donor.address}</td>
                 <td>{donor.donationType}</td>
+
                 <td>
                   <span
                     className={`status-badge status-${donor.status.toLowerCase()}`}
@@ -381,7 +363,9 @@ const Dashboard = () => {
                     {donor.status}
                   </span>
                 </td>
+
                 <td>{formatDateTime(donor.updatedAt)}</td>
+
                 <td>
                   {donor.status !== "Completed" ? (
                     <button
@@ -409,4 +393,5 @@ const Dashboard = () => {
     </div>
   );
 };
+
 export default Dashboard;
