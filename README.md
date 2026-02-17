@@ -132,5 +132,4 @@ MongoDB
 Bootstrap for styling
 
 Socket.io for real-time updates
-
 ---
