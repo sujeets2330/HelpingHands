@@ -252,30 +252,44 @@ const Dashboard = () => {
   // UPDATE STATUS (INSTANT)
   // ======================
   const handleUpdateStatus = async (id, currentStatus) => {
-    const nextStatus =
-      currentStatus === "Pending" ? "Accepted" : "Completed";
+  const nextStatus =
+    currentStatus === "Pending" ? "Accepted" : "Completed";
 
-    try {
-      const res = await fetch(`${API_URL}/donors/${id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
-      });
+  // 🔥 1. INSTANT UI UPDATE (OPTIMISTIC)
+  setDonations((prev) =>
+    prev.map((d) =>
+      d._id === id
+        ? { ...d, status: nextStatus, updatedAt: new Date().toISOString() }
+        : d
+    )
+  );
 
-      if (!res.ok) throw new Error("Update failed");
+  try {
+    // 2. BACKEND CONFIRMATION
+    const res = await fetch(`${API_URL}/donors/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: nextStatus }),
+    });
 
-      const updatedDonor = await res.json();
+    if (!res.ok) throw new Error("Update failed");
 
-      // 🔥 INSTANT UI UPDATE
-      setDonations((prev) =>
-        prev.map((d) =>
-          d._id === updatedDonor._id ? updatedDonor : d
-        )
-      );
-    } catch (err) {
-      console.error("Error updating status:", err);
-    }
-  };
+    const updatedDonor = await res.json();
+
+    // 3. SYNC WITH BACKEND RESPONSE (FINAL TRUTH)
+    setDonations((prev) =>
+      prev.map((d) =>
+        d._id === updatedDonor._id ? updatedDonor : d
+      )
+    );
+  } catch (err) {
+    console.error("Error updating status:", err);
+
+    // OPTIONAL: rollback if backend fails
+    fetchDonations();
+  }
+};
+
 
   // ======================
   // DELETE (INSTANT)
