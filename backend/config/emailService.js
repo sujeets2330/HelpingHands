@@ -36,8 +36,8 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const sendEmail = async ({ to, subject, text }) => {
   try {
     await sgMail.send({
-      // from: process.env.EMAIL_USER,
-      from: "Helpinghands@example.com", 
+      from: process.env.EMAIL_USER,
+      // from: "Helpinghands@example.com", 
       to,
       subject,
       text,
@@ -50,3 +50,4 @@ const sendEmail = async ({ to, subject, text }) => {
 };
 
 module.exports = sendEmail;
+
