@@ -1,3 +1,12 @@
+## 🌐 Live Access
+
+- **Admin Panel**  
+  👉 [Open Admin Panel](https://helpinghands-admin.onrender.com/)
+
+- **Backend (Public API)**  
+  👉 [Open Backend Service](https://helpinghands-hbx5.onrender.com/)
+
+--- 
 # 🤝 HelpingHands: Volunteer & Donation Management Platform
 
 HelpingHands is a full-stack web platform for managing volunteer registrations, tracking donations, and facilitating interaction between donors, volunteers, and administrators. The platform is designed to simplify social initiatives, supporting causes with volunteer coordination and donation tracking. It uses a modern web stack with **Node.js**, **JavaScript** , **Express**, **MongoDB**, and **React** for the admin panel.
