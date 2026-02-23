@@ -259,10 +259,179 @@
 // module.exports = router;
  
 
+// const express = require("express");
+// const router = express.Router();
+// const Donor = require("../models/Donor");
+// const sendEmail = require("../config/emailService"); 
+
+// // ==========================
+// // Tracking Number Generator
+// // ==========================
+// function generateTrackingNumber() {
+//   const timestampPart = Date.now().toString().slice(-6);
+//   return `HH-${timestampPart}`;
+// }
+
+// // ==========================
+// // SUBMIT DONATION
+// // ==========================
+// router.post("/submit", async (req, res) => {
+//   try {
+//     const { name, mobile, donationType, address, email, message } = req.body;
+
+//     if (!name || !mobile || !donationType || !address || !email || !message) {
+//       return res.status(400).json({ error: "All fields are required." });
+//     }
+
+//     const trackingNumber = generateTrackingNumber();
+
+//     const donor = await Donor.create({
+//       name,
+//       mobile,
+//       donationType,
+//       address,
+//       email,
+//       message,
+//       trackingNumber,
+//       status: "Pending",
+//     });
+
+//     //  Send confirmation email to donor
+//     await sendEmail({
+//       to: email,
+//       subject: "Thank You for Your Donation",
+//       text: `Hi ${name},
+
+// Thank you for your generous donation to HelpingHands!
+
+// Your tracking number is: ${trackingNumber}
+
+// You can track your donation anytime.
+
+//  HelpingHands Team`,
+//     });
+
+//     //  Emit socket event
+//     const io = req.app.get("io");
+//     if (io) io.emit("newDonor", donor);
+
+//     res.redirect("/thank");
+//   } catch (error) {
+//     console.error("Error processing donation:", error);
+//     res.status(500).json({ error: "Server error. Please try again later." });
+//   }
+// });
+
+// // ==========================
+// // GET ALL DONORS
+// // ==========================-
+// router.get("/donors", async (req, res) => {
+//   try {
+//     const donors = await Donor.find().sort({ createdAt: -1 });
+//     res.json(donors);
+//   } catch (error) {
+//     console.error("Error fetching donors:", error);
+//     res.status(500).json({ error: "Server error." });
+//   }
+// });
+
+// // ==========================
+// // TRACK DONATION
+// // ==========================
+// router.get("/track/:trackingNumber", async (req, res) => {
+//   try {
+//     const donor = await Donor.findOne({
+//       trackingNumber: req.params.trackingNumber,
+//     });
+
+//     if (!donor) {
+//       return res.status(404).json({ error: "Tracking number not found." });
+//     }
+
+//     res.json({
+//       name: donor.name,
+//       donationType: donor.donationType,
+//       status: donor.status,
+//       updatedAt: donor.updatedAt,
+//     });
+//   } catch (error) {
+//     console.error("Error tracking donation:", error);
+//     res.status(500).json({ error: "Server error." });
+//   }
+// });
+
+// // ==========================
+// // UPDATE DONATION STATUS
+// // ==========================
+// router.put("/donors/:id/status", async (req, res) => {
+//   try {
+//     const { status } = req.body;
+
+//     if (!status) {
+//       return res.status(400).json({ error: "Status is required." });
+//     }
+
+//     const donor = await Donor.findByIdAndUpdate(
+//       req.params.id,
+//       { status },
+//       { new: true }
+//     );
+
+//     if (!donor) {
+//       return res.status(404).json({ error: "Donor not found." });
+//     }
+
+//     //  Status update email
+//     await sendEmail({
+//       to: donor.email,
+//       subject: "Donation Status Updated",
+//       text: `Hi ${donor.name},
+
+// Your donation status has been updated to: ${status}
+
+// Thank you for your support.
+
+// — HelpingHands Team`,
+//     });
+
+//     //  Emit socket update
+//     const io = req.app.get("io");
+//     if (io) io.emit("updateDonor", donor);
+
+//     res.json({ message: "Status updated", donor });
+//   } catch (error) {
+//     console.error("Error updating status:", error);
+//     res.status(500).json({ error: "Server error." });
+//   }
+// });
+
+// // ==========================
+// // DELETE DONATION
+// // ==========================
+// router.delete("/donors/:id", async (req, res) => {
+//   try {
+//     const donor = await Donor.findByIdAndDelete(req.params.id);
+//     if (!donor) {
+//       return res.status(404).json({ error: "Donor not found." });
+//     }
+
+//     const io = req.app.get("io");
+//     if (io) io.emit("deleteDonor", req.params.id);
+
+//     res.json({ message: "Donation deleted." });
+//   } catch (error) {
+//     console.error("Error deleting donor:", error);
+//     res.status(500).json({ error: "Server error." });
+//   }
+// });
+
+// module.exports = router;
+
+
 const express = require("express");
 const router = express.Router();
 const Donor = require("../models/Donor");
-const sendEmail = require("../config/emailService"); // ✅ SendGrid service
+const sendEmail = require("../config/emailService");
 
 // ==========================
 // Tracking Number Generator
@@ -296,22 +465,34 @@ router.post("/submit", async (req, res) => {
       status: "Pending",
     });
 
-    // 📧 Send confirmation email to donor
+    // ==========================
+    // Confirmation Email
+    // ==========================
     await sendEmail({
+      from: `"HelpingHands" <no-reply@helpinghands.org>`,
       to: email,
-      subject: "Thank You for Your Donation",
+      replyTo: "support@helpinghands.org",
+      subject: "Donation Received – HelpingHands",
       text: `Hi ${name},
 
-Thank you for your generous donation to HelpingHands!
+Thank you for your donation to HelpingHands.
 
-Your tracking number is: ${trackingNumber}
+Tracking Number: ${trackingNumber}
 
-You can track your donation anytime.
+You can use this tracking number to check your donation status.
 
-— HelpingHands Team`,
+Warm regards,
+HelpingHands Team`,
+      html: `
+        <p>Hi <strong>${name}</strong>,</p>
+        <p>Thank you for your donation to <strong>HelpingHands</strong>.</p>
+        <p><strong>Tracking Number:</strong> ${trackingNumber}</p>
+        <p>You can use this tracking number to check your donation status.</p>
+        <p>Warm regards,<br/>HelpingHands Team</p>
+      `,
     });
 
-    // 🔴 Emit socket event
+    // Emit socket event
     const io = req.app.get("io");
     if (io) io.emit("newDonor", donor);
 
@@ -324,7 +505,7 @@ You can track your donation anytime.
 
 // ==========================
 // GET ALL DONORS
-// ==========================-
+// ==========================
 router.get("/donors", async (req, res) => {
   try {
     const donors = await Donor.find().sort({ createdAt: -1 });
@@ -381,20 +562,31 @@ router.put("/donors/:id/status", async (req, res) => {
       return res.status(404).json({ error: "Donor not found." });
     }
 
-    //  Status update email
+    // Status update email
     await sendEmail({
+      from: `"HelpingHands" <no-reply@helpinghands.org>`,
       to: donor.email,
-      subject: "Donation Status Updated",
+      replyTo: "support@helpinghands.org",
+      subject: "Donation Status Updated – HelpingHands",
       text: `Hi ${donor.name},
 
-Your donation status has been updated to: ${status}
+Your donation status has been updated.
 
-Thank you for your support.
+Current Status: ${status}
 
-— HelpingHands Team`,
+Thank you for supporting HelpingHands.
+
+Regards,
+HelpingHands Team`,
+      html: `
+        <p>Hi <strong>${donor.name}</strong>,</p>
+        <p>Your donation status has been updated.</p>
+        <p><strong>Current Status:</strong> ${status}</p>
+        <p>Thank you for supporting HelpingHands.</p>
+        <p>Regards,<br/>HelpingHands Team</p>
+      `,
     });
 
-    // 🔴 Emit socket update
     const io = req.app.get("io");
     if (io) io.emit("updateDonor", donor);
 
@@ -411,6 +603,7 @@ Thank you for your support.
 router.delete("/donors/:id", async (req, res) => {
   try {
     const donor = await Donor.findByIdAndDelete(req.params.id);
+
     if (!donor) {
       return res.status(404).json({ error: "Donor not found." });
     }
